@@ -1,5 +1,6 @@
-virtualenv1/
+virtualenviroment/
 __pycache__/
 config.json
 posts.json
 ReadMe.md
+.vscode/
