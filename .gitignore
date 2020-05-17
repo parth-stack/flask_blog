@@ -1,2 +1,5 @@
 virtualenv1/
-
+__pycache__/
+config.json
+posts.json
+ReadMe.md
