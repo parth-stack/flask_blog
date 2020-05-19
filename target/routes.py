@@ -1,17 +1,18 @@
-from flask import Flask,render_template,request,redirect,url_for,flash
+from flask import render_template,request,redirect,url_for,flash
 import json
-from forms import RegisterForm,LoginForm
+from target import app
+from target.models import User,Post
+from target.forms import RegisterForm,LoginForm
 
-with open('config.json','r') as c:
+
+with open('target/config.json','r') as c:
     config_json = json.load(c)
 
-with open('posts.json','r') as p:
+with open('target/posts.json','r') as p:
     posts_json = json.load(p)
 
-app=Flask(__name__)
-app.secret_key='zR0pu1dXbAOhlC-sRX5SzQ'
-
 @app.route("/")
+@app.route("/home")
 def initial():
     return render_template("index.html",urls=config_json["urls"],posts=posts_json)
 
