@@ -1,4 +1,6 @@
+from flask import session
 from flask_wtf import FlaskForm
+from flask_wtf.file import FileField,FileAllowed
 from wtforms import StringField,PasswordField,SubmitField,BooleanField
 from wtforms.validators import DataRequired,Length,Email,EqualTo,ValidationError
 from target.models import User
@@ -17,9 +19,27 @@ class RegisterForm(FlaskForm):
             raise ValidationError('the username is taken please choose a different one')
     
     def validate_email(self,e):
+        user=User.query.filter_by(email=e.data).first()
+        if user:
+            raise ValidationError('the email is taken please choose a different one')
+
+class UpdateForm(FlaskForm):
+    username=StringField('Username')
+    email=StringField('Email')
+    picture = FileField('Update Profile Picture', validators=[FileAllowed(['jpg', 'png'])])
+    submit=SubmitField('Update')
+    '''
+    def validate_username(self,n):
+        if session['user']['username']==n.data:
+            user=User.query.filter_by(username=n.data).first()
+            if user:
+                raise ValidationError('the username is taken please choose a different one')
+        
+    def validate_email(self,e):
+        if session['user']['email']==e.data:
             user=User.query.filter_by(email=e.data).first()
             if user:
-                raise ValidationError('the email is taken please choose a different one')
+                raise ValidationError('the email is taken please choose a different one')'''
 
 class LoginForm(FlaskForm):
     email=StringField('Email',validators=[DataRequired()])
