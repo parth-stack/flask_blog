@@ -1,22 +1,15 @@
-from flask import render_template,request,redirect,url_for,flash,session
+from flask import render_template,request,redirect,url_for,flash,session,abort
 import json,secrets,os
 from werkzeug.utils import secure_filename
 from target import app,db,bcrypt
 from target.models import User,Post
-from target.forms import RegisterForm,LoginForm,UpdateForm
+from target.forms import RegisterForm,LoginForm,UpdateForm,PostForm
 
-
-
-with open('target/config.json','r') as c:
-    config_json = json.load(c)
-
-with open('target/posts.json','r') as p:
-    posts_json = json.load(p)
 
 @app.route("/")
 @app.route("/home")
 def initial():
-    return render_template("index.html",urls=config_json["urls"],posts=posts_json)
+    return render_template("index.html",posts=Post.query.all())
 
 @app.route("/register",methods=['GET','POST'])
 def register():
@@ -61,15 +54,13 @@ def logout_route():
 
 @app.route("/dashboard",methods=['GET','POST'])
 def dashboard_route():
-    
     def save_picture(form_picture):
         random_hex = secrets.token_hex(8)
         _, f_ext = os.path.splitext(form_picture.filename)
         picture_fn = random_hex + f_ext
         picture_path = os.path.join(app.root_path, 'static/profile_pics', picture_fn)
         form_picture.save(picture_path)
-        return picture_fn
-        
+        return picture_fn   
     if 'user' in session:
         form=UpdateForm()
         current_user = User.query.filter_by(username=session['user']['username']).first()
@@ -86,3 +77,51 @@ def dashboard_route():
             form.username.data = current_user.username
             form.email.data = current_user.email
         return render_template("dashboard.html",form=form,image_file=image_file)
+
+@app.route("/post/<string:post_id>",methods=['GET','POST'],defaults={'action': None})
+@app.route("/post/<string:post_id>/<string:action>",methods=['GET','POST'])
+def post_route(post_id,action):
+    if 'user' in session:
+        if post_id=='new' and action==None:
+            form = PostForm()
+            if request.method=='POST' and form.validate_on_submit():
+                post = Post(title=form.title.data, content=form.content.data, author=User.query.filter_by(username=session['user']['username']).first())
+                db.session.add(post)
+                db.session.commit()
+                flash('Your post has been created!', 'success')
+                return redirect(url_for('initial'))
+            return render_template('create_post.html',form=form, legend='New Post')
+        elif post_id.isnumeric():
+            if action==None:
+                post = Post.query.get_or_404(post_id)
+                return render_template('post.html', post=post)
+            elif action=='update':
+                post = Post.query.get_or_404(post_id)
+                if post.author.email != session['user']['email']:
+                    abort(403)
+                form = PostForm()
+                if form.validate_on_submit():
+                    post.title = form.title.data
+                    post.content = form.content.data
+                    db.session.commit()
+                    flash('Your post has been updated!', 'success')
+                    return redirect(url_for('post_route', post_id=post.id))
+                elif request.method == 'GET':
+                    form.title.data = post.title
+                    form.content.data = post.content
+                return render_template('create_post.html', form=form, legend='Update Post')
+            elif action=='delete':
+                post = Post.query.get_or_404(post_id)
+                if post.author.email != session['user']['email']:
+                    abort(403)
+                db.session.delete(post)
+                db.session.commit()
+                flash('Your post has been deleted!', 'success')
+                return redirect(url_for('initial'))
+            else:
+                abort(404)
+        else:
+            abort(404)
+    else:
+        post = Post.query.get_or_404(post_id)
+        return render_template('post.html', post=post)

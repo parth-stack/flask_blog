@@ -1,7 +1,6 @@
-from flask import session
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField,FileAllowed
-from wtforms import StringField,PasswordField,SubmitField,BooleanField
+from wtforms import StringField,PasswordField,SubmitField,BooleanField,TextAreaField
 from wtforms.validators import DataRequired,Length,Email,EqualTo,ValidationError
 from target.models import User
 
@@ -11,13 +10,11 @@ class RegisterForm(FlaskForm):
     email=StringField('Email',validators=[DataRequired()])
     password=PasswordField('Password',validators=[DataRequired(),Length(5)])
     confirm_password=PasswordField('Confirm Password',validators=[DataRequired(),EqualTo('password')])
-    submit=SubmitField('Sign Up')
-    
+    submit=SubmitField('Sign Up') 
     def validate_username(self,n):
         user=User.query.filter_by(username=n.data).first()
         if user:
             raise ValidationError('the username is taken please choose a different one')
-    
     def validate_email(self,e):
         user=User.query.filter_by(email=e.data).first()
         if user:
@@ -28,21 +25,14 @@ class UpdateForm(FlaskForm):
     email=StringField('Email')
     picture = FileField('Update Profile Picture', validators=[FileAllowed(['jpg', 'png'])])
     submit=SubmitField('Update')
-    '''
-    def validate_username(self,n):
-        if session['user']['username']==n.data:
-            user=User.query.filter_by(username=n.data).first()
-            if user:
-                raise ValidationError('the username is taken please choose a different one')
-        
-    def validate_email(self,e):
-        if session['user']['email']==e.data:
-            user=User.query.filter_by(email=e.data).first()
-            if user:
-                raise ValidationError('the email is taken please choose a different one')'''
 
 class LoginForm(FlaskForm):
     email=StringField('Email',validators=[DataRequired()])
     password=PasswordField('Password',validators=[DataRequired()])
     remember=BooleanField('Remember Me')
     submit=SubmitField('Login')
+
+class PostForm(FlaskForm):
+    title = StringField('Title', validators=[DataRequired()])
+    content = TextAreaField('Content', validators=[DataRequired()])
+    submit = SubmitField('Post')
