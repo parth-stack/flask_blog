@@ -1,6 +1,6 @@
-from flask import render_template,request,redirect,url_for,flash
+from flask import render_template,request,redirect,url_for,flash,session
 import json
-from target import app
+from target import app,db,bcrypt
 from target.models import User,Post
 from target.forms import RegisterForm,LoginForm
 
@@ -18,17 +18,41 @@ def initial():
 
 @app.route("/register",methods=['GET','POST'])
 def register():
-    form=RegisterForm() 
-    if request.method=='POST' and form.validate(): 
-        flash('Registerd as '+form.username.data,category='success')
-        flash('Logged in ',category='success')
+    if 'user' in session:
         return redirect(url_for('initial'))
-    return render_template("register.html",form=form)
+    else:
+        form=RegisterForm() 
+        if request.method=='POST' and form.validate():
+            hashed_password=bcrypt.generate_password_hash(form.password.data).decode('utf-8')
+            user = User(username=form.username.data,password=hashed_password,email=form.email.data)
+            db.session.add(user)
+            db.session.commit()
+            session['user']=user.username
+            flash('Registerd as '+form.username.data,category='success')
+            return redirect(url_for('login'))
+        return render_template("register.html",form=form)
 
 @app.route("/login",methods=['GET','POST'])
 def login():
-    form=LoginForm()
-    if request.method=='POST' and form.validate():
-        flash('Logged in ',category='success')
+    if 'user' in session:
         return redirect(url_for('initial'))
-    return render_template("login.html",form=form)
+    else:
+        form=LoginForm()
+        if request.method=='POST' and form.validate():
+            user = User.query.filter_by(email=form.email.data).first()
+            if(user) and bcrypt.check_password_hash(user.password,form.password.data):
+                session['user']=user.username
+                flash('Logged in ',category='success')
+                return redirect(url_for('initial'))
+            else:
+                flash('Login Error',category='danger')
+        return render_template("login.html",form=form)
+        
+@app.route("/logout")
+def logout_route():
+    session.pop('user')
+    return redirect(url_for('initial'))
+
+@app.route("/dashboard",methods=['GET','POST'])
+def dashboard_route():
+    return session['user']
