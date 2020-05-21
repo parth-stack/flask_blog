@@ -15,6 +15,12 @@ app.config['MAIL_USERNAME'] = "parthsharma.asia@gmail.com"
 app.config['MAIL_PASSWORD'] = "q6w6e6r6t6y"
 mail = Mail(app)
 
-from target import routes
+from target.users.routes import users
+from target.posts.routes import posts
+from target.main.routes import main
+app.register_blueprint(users)
+app.register_blueprint(posts)
+app.register_blueprint(main)
+
 
 db.create_all()

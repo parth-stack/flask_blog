@@ -1,7 +1,8 @@
 virtualenviroment/
 target/__pycache__/
-target/config.json
-target/posts.json
+target/main/__pycache__/
+target/posts/__pycache__/
+target/users/__pycache__/
 target/sqlite.db
 ReadMe.md
 .vscode/

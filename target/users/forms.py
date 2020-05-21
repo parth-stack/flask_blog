@@ -4,7 +4,6 @@ from wtforms import StringField,PasswordField,SubmitField,BooleanField,TextAreaF
 from wtforms.validators import DataRequired,Length,Email,EqualTo,ValidationError
 from target.models import User
 
-
 class RegisterForm(FlaskForm):
     username=StringField('Username',validators=[DataRequired(),Length(2,10)])
     email=StringField('Email',validators=[DataRequired()])
@@ -31,11 +30,6 @@ class LoginForm(FlaskForm):
     password=PasswordField('Password',validators=[DataRequired()])
     remember=BooleanField('Remember Me')
     submit=SubmitField('Login')
-
-class PostForm(FlaskForm):
-    title = StringField('Title', validators=[DataRequired()])
-    content = TextAreaField('Content', validators=[DataRequired()])
-    submit = SubmitField('Post')
 
 class RequestResetForm(FlaskForm):
     email = StringField('Email',validators=[DataRequired()])
