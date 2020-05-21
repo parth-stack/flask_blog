@@ -4,21 +4,26 @@ from flask_bcrypt import Bcrypt
 from flask_mail import Mail
 from target.config import Config
 
-app=Flask(__name__)
+db=SQLAlchemy()
+bcrypt=Bcrypt()
+mail = Mail()
 
-app.config.from_object(Config)
+def create_app(config_class=Config):
+    app=Flask(__name__)
+    app.config.from_object(Config) 
 
-db=SQLAlchemy(app)
-bcrypt=Bcrypt(app)
+    db.init_app(app)
+    bcrypt.init_app(app)
+    mail.init_app(app)
 
-mail = Mail(app)
+    from target.users.routes import users
+    from target.posts.routes import posts
+    from target.main.routes import main
+    app.register_blueprint(users)
+    app.register_blueprint(posts)
+    app.register_blueprint(main)
 
-from target.users.routes import users
-from target.posts.routes import posts
-from target.main.routes import main
-app.register_blueprint(users)
-app.register_blueprint(posts)
-app.register_blueprint(main)
-
-
-db.create_all()
+    with app.app_context():
+        db.create_all()
+    
+    return app
