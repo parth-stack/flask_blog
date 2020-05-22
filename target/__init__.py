@@ -19,9 +19,11 @@ def create_app(config_class=Config):
     from target.users.routes import users
     from target.posts.routes import posts
     from target.main.routes import main
+    from target.errors.handlers import errors
     app.register_blueprint(users)
     app.register_blueprint(posts)
     app.register_blueprint(main)
+    app.register_blueprint(errors)
 
     with app.app_context():
         db.create_all()

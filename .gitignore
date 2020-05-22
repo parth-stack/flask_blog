@@ -3,6 +3,6 @@ target/__pycache__/
 target/main/__pycache__/
 target/posts/__pycache__/
 target/users/__pycache__/
+target/errors/__pycache__/
 target/sqlite.db
-ReadMe.md
 .vscode/
