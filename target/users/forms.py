@@ -10,6 +10,7 @@ class RegisterForm(FlaskForm):
     password=PasswordField('Password',validators=[DataRequired(),Length(5)])
     confirm_password=PasswordField('Confirm Password',validators=[DataRequired(),EqualTo('password')])
     submit=SubmitField('Sign Up') 
+    # custom validator of format[validate_XYZ] raises ValidationError
     def validate_username(self,n):
         user=User.query.filter_by(username=n.data).first()
         if user:
